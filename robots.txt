@@ -1,0 +1,22 @@
+# Digital-Clock
+
+# robots.txt
+
+# Allow all crawlers to access the site content
+User-agent: *
+Allow: /
+
+# Ensure crawlers can access styles and scripts for proper rendering
+Allow: /style/
+Allow: /client-modules/
+Allow: /assets/
+
+# Disallow system files or configuration files
+Disallow: /.dockerignore
+Disallow: /Dockerfile
+Disallow: /.git/
+Disallow: /.github/
+Disallow: /README.md
+Disallow: /CONTRIBUTING.md
+Disallow: /ACKNOWLEDGEMENTS.md
+Disallow: /LICENSE

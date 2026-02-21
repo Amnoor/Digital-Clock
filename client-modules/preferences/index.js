@@ -42,6 +42,19 @@ function loadSavedMode(){
         log("trace", `Saved mode retrieved: ${savedMode}`);
         return;
     }
+    else if(savedMode !== "24" && savedMode !== "12"){
+        log("warn", "Unexpected saved clock mode found in client-side storage; defaulting to 12h mode.");
+        toggleInput.checked = false;
+        startClock(12);
+        log("trace", `Saved mode retrieved: ${savedMode}`);
+        return;
+    }
+    else{
+        log("error", "Unexpected saved clock mode found in client-side storage; defaulting to 12h mode.");
+        toggleInput.checked = false;
+        startClock(12);
+        log("trace", `Saved mode retrieved: ${savedMode}`);
+    }
 }
 
 /**

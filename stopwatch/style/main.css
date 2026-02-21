@@ -1,0 +1,83 @@
+/* Digital-Clock */
+
+/* stopwatch/style/style.css */
+
+/* Stopwatch Container */
+#stopwatch-container {
+    position: relative;
+    width: 420px; 
+    height: 250px;
+    background-color: hsla(0, 0%, 0%, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 60px;
+    box-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Courier New', Courier, monospace;
+    color: hsl(0, 0%, 90%);
+}
+
+/* Stopwatch Display */
+#stopwatch-display {
+    color: hsl(0, 0%, 100%);
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+/* Controls Container */
+.controls-container {
+    display: flex;
+    gap: 15px;
+}
+
+/* Stopwatch Buttons */
+.stopwatch-btns {
+    width: 100px;
+    height: 40px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: hsl(0, 0%, 100%);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s;
+}
+
+/* Button Active State */
+.stopwatch-btns:active {
+    transform: scale(0.95);
+}
+
+/* specific button colors */
+#start-btn {
+    background-color: hsl(120, 80%, 25%);
+}
+
+/* hover effect for start button */
+#start-btn:hover {
+    background-color: hsl(120, 80%, 35%);
+}
+
+/* specific button colors */
+#stop-btn {
+    background-color: hsl(0, 80%, 35%);
+}
+
+/* hover effect for stop button */
+#stop-btn:hover {
+    background-color: hsl(0, 80%, 45%);
+}
+
+/* specific button colors */
+#reset-btn {
+    background-color: hsl(50, 90%, 45%);
+    color: hsl(0, 0%, 10%); 
+}
+
+/* hover effect for reset button */
+#reset-btn:hover {
+    background-color: hsl(50, 90%, 55%);
+}

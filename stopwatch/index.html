@@ -1,0 +1,51 @@
+<!-- Digital-Clock -->
+
+<!-- stopwatch/index.html -->
+
+<!-- Starting the HTML file with the <!DOCTYPE html> element -->
+<!DOCTYPE html>
+<!-- Starting the <html> element -->
+<html lang="en">
+    <!-- Starting the <head> element -->
+    <head>
+        <!-- Adding meta tags -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="A minimalist stopwatch web application">
+        <!-- Adding title and icon -->
+        <title>Digital Clock - Stopwatch</title>
+        <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+        <!-- Adding stylesheets -->
+        <link rel="stylesheet" href="../style/body.css">
+        <link rel="stylesheet" href="../style/nav.css">
+        <link rel="stylesheet" href="./style/main.css">
+    </head>
+    <!-- Starting the <body> element -->
+    <body>
+        <!-- Creating a navigation bar -->
+        <nav aria-label="Main Navigation">
+            <button id="nav-icon" aria-label="Toggle menu" aria-expanded="false">
+                <img src="../assets/Mobile/nav.svg" alt="Navigation Menu Icon">
+            </button>
+
+            <ul id="nav-menu">
+                <li><a href="/" id="home">Home</a></li>
+                <li><a href="/stopwatch" aria-current="page" id="stopwatch">Stopwatch</a></li>
+            </ul>
+        </nav>
+        <!-- Creating a container for the stopwatch -->
+        <main id="stopwatch-container">
+            <!-- Adding the stopwatch display element -->
+            <h1 id="stopwatch-display">00:00:00.00</h1>
+            <!-- Creating a container for the control buttons -->
+            <div class="controls-container">
+                <button id="start-btn" class="stopwatch-btns">Start</button>
+                <button id="stop-btn" class="stopwatch-btns">Stop</button>
+                <button id="reset-btn" class="stopwatch-btns">Reset</button>
+            </div>
+        </main>
+        <!-- Linking the JavaScript file -->
+        <script src="/config.js" defer></script>
+        <script type="module" src="index.js" defer></script>
+    </body>
+</html>

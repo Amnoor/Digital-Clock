@@ -1,0 +1,83 @@
+# Digital-Clock
+
+# .github/workflows/docker-push.yml
+
+# I name the workflow "Release on tag".
+name: Release on tag
+
+# I made the trigger for this workflow to be a push to a tag that starts with "v". This means that whenever I create a new tag that follows this pattern, the workflow will automatically run.
+on:
+  push:
+    tags:
+      - "v*"
+
+# I set the permissions for this workflow to allow read access to the repository contents and write access to packages. This is necessary for the workflow to be able to read the code and push the built Docker images to the package registry.
+permissions:
+  contents: read
+  packages: write
+
+# I define a job called "build-and-publish" that will run on the latest version of Ubuntu. This job will contain all the steps needed to build and publish the Docker images.
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    # I set some environment variables that will be used throughout the workflow. These include the name of the image, the Docker Hub image name, and the GitHub Container Registry image name.
+    env:
+      IMAGE_NAME: digital-clock
+      DOCKERHUB_IMAGE: amnoorbrar/digital-clock
+      GHCR_IMAGE: ghcr.io/amnoor/digital-clock
+
+    # I define the steps that will be executed in this job.
+    steps:
+      # First step is to check out the code from the repository using the actions/checkout action. This allows the workflow to access the code and build the Docker images.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Next, I set up QEMU using the docker/setup-qemu-action. This is necessary for building multi-platform Docker images, as it allows the workflow to emulate different CPU architectures.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # Next, I set up Docker Buildx using the docker/setup-buildx-action. Buildx is a Docker CLI plugin that extends the capabilities of Docker Build, allowing for features like multi-platform builds and advanced caching.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Next, I use the docker/metadata-action to extract metadata such as tags and labels for the Docker images. This action generates tags based on the Git reference (e.g., the tag that triggered the workflow) and also allows for a "latest" tag to be added. The extracted tags and labels will be used in the subsequent build and push step.
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKERHUB_IMAGE }}
+            ${{ env.GHCR_IMAGE }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest
+
+      # Next, I log in to Docker Hub using the docker/login-action. This action takes the Docker Hub username and token from the repository secrets and authenticates the workflow with Docker Hub, allowing to push images to the registry.
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Next, I log in to the GitHub Container Registry (GHCR) using the docker/login-action. Similar to the Docker Hub login, this action uses the GitHub repository owner and the GITHUB_TOKEN secret to authenticate with GHCR, allowing the workflow to push images to the GitHub Container Registry.
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Latly, I use the docker/build-push-action to build and push the Docker images to both Docker Hub and GHCR. This action takes the context of the build (the current directory), the tags and labels extracted in the previous step, and specifies that the images should be pushed after building. It also enables multi-platform builds for both amd64 and arm64 architectures, generates provenance and SBOM (Software Bill of Materials) for the images, and uses GitHub Actions caching to speed up subsequent builds.
+      - name: Build and push (multi-registry)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: true
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

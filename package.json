@@ -1,0 +1,30 @@
+{
+  "name": "digital-clock",
+  "version": "1.0.0",
+  "description": "A sleek, blazing-fast digital clock with a built-in stopwatch — simple on the surface, thoughtfully engineered underneath.",
+  "keywords": [
+    "digital-clock", "digitalclock", "clock", "stopwatch",
+    "html", "html5", "css", "css3", "javascript", "es6", "es6-module", "html-css-javascript", "html-css",
+    "node", "nodejs", "node-js",
+    "nodemon"
+  ],
+  "homepage": "https://github.com/Amnoor/Digital-Clock#readme",
+  "bugs": {
+    "url": "https://github.com/Amnoor/Digital-Clock/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Amnoor/Digital-Clock.git"
+  },
+  "license": "MIT",
+  "author": "Amnoor Brar",
+  "type": "module",
+  "main": "router.js",
+  "scripts": {
+    "start": "node router.js",
+    "dev": "nodemon --env-file=.env router.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

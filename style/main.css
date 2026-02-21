@@ -1,0 +1,138 @@
+/* Digital-Clock */
+
+/* style/main.css */
+
+/* Main Container */
+#toggle-container {
+    grid-column: 3;
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 2rem;
+    font-family: sans-serif;
+    color: hsl(0, 0%, 85%);
+    user-select: none;
+    z-index: 102;
+}
+
+/* Switch styling */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+/* Hide default checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: hsl(0, 0%, 15%);
+    transition: .4s;
+    border-radius: 34px;
+}
+
+/* Slider circle */
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px hsla(0, 0%, 0%, 0.2);
+}
+
+/* Hover effect for slider */
+.slider:hover {
+    background-color: hsl(0, 0%, 30%);
+}
+
+/* Change background when checked */
+input:checked + .slider {
+    background-color: hsl(0, 0%, 15%);
+}
+
+/* Move the slider when checked */
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+/* Toggle label Styles */
+.toggle-label {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: hsl(0, 0%, 85%);
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+/* Toggle label hover effect */
+.toggle-label:hover {
+    color: hsl(0, 0%, 70%);
+}
+
+/* Nav Styles */
+#clock-box {
+    width: clamp(250px, 90vw, 65vw);
+    max-width: 90vw;
+    max-height: 70vh;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: hsl(0, 0%, 85%);
+    background-color: hsla(0, 0%, 0%, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 60px;
+    box-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.2);
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* Clock Box Mobile */
+@media (max-width: 600px) {
+    
+    /* Clock Box */
+    #clock-box {
+        width: 90vw;
+        height: auto;
+        max-height: 25vh;
+        font-size: clamp(1.5rem, 7vw, 3rem);
+        border-radius: 40px;
+    }
+
+    /* Format Toggle Switch */
+    #toggle-container {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        z-index: 102;
+    }
+
+    /* Switch container */
+    .switch {
+        display: inline-flex;
+        align-items: center;
+    }
+}

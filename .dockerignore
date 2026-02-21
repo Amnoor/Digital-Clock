@@ -1,0 +1,15 @@
+# Git
+.git/
+.github/
+
+# LICENSE
+LICENSE
+
+# Documentation
+README.md
+CONTRIBUTING.md
+ACKNOWLEDGEMENTS.md
+
+# Docker
+Dockerfile
+.dockerignore

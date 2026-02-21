@@ -1,0 +1,29 @@
+/* Digital-Clock */
+
+/* style/body.css */
+
+/* Global Box Sizing */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Body */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Centering the clock */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('../assets/background.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}

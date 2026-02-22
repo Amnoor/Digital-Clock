@@ -84,8 +84,40 @@ function serveFile({ filePath, statusCode, pathname, res, log, projectRoot }) {
         // if there is an error reading the file, log the error and send a 404 or 500 response based on the error code
         if (error) {
             log("error", `Error reading file ${filePath}: ${error.message}`);
-            const resolvedStatusCode = error.code === "ENOENT" ? 404 : 500;
-            sendNotFound({ res, statusCode: resolvedStatusCode, projectRoot });
+            if (error.code === "ENOENT") {
+                const resolvedStatusCode = 404;
+                log("error", `File not found: ${filePath}, sending 404 response`);
+                sendNotFound({ res, statusCode: resolvedStatusCode, projectRoot });
+            }
+            else if (error.code === "EACCES") {
+                const resolvedStatusCode = 403;
+                log("error", `Permission denied for file: ${filePath}, sending 403 response`);
+                res.writeHead(resolvedStatusCode, { "Content-Type": "text/html; charset=utf-8" });
+                res.end("<h1>403 Forbidden</h1>");
+            }
+            else if (error.code === "EPERM") {
+                const resolvedStatusCode = 403;
+                log("error", `Operation not permitted for file: ${filePath}, sending 403 response`);
+                res.writeHead(resolvedStatusCode, { "Content-Type": "text/html; charset=utf-8" });
+                res.end("<h1>403 Forbidden</h1>");
+            }
+            else if (error.code === "EISDIR") {
+                const resolvedStatusCode = 404;
+                log("error", `Attempted to read a directory as a file: ${filePath}, sending 404 response`);
+                sendNotFound({ res, statusCode: resolvedStatusCode, projectRoot });
+            }
+            else if (error.code === "EMFILE") {
+                const resolvedStatusCode = 500;
+                log("error", `Too many open files: ${filePath}, sending 500 response`);
+                res.writeHead(resolvedStatusCode, { "Content-Type": "text/html; charset=utf-8" });
+                res.end("<h1>500 Service Unavailable</h1>");
+            }
+            else {
+                const resolvedStatusCode = 500;
+                log("error", `Unexpected error code ${error.code} for file: ${filePath}, sending 500 response`);
+                res.writeHead(resolvedStatusCode, { "Content-Type": "text/html; charset=utf-8" });
+                res.end("<h1>500 Internal Server Error</h1>");
+            };
         }
         else {
             log("debug", `Successfully read file: ${filePath}`);

@@ -1,4 +1,4 @@
-﻿# Digital Clock
+# Digital Clock
 
 A sleek, blazing-fast digital clock with a built-in stopwatch — simple on the surface, thoughtfully engineered underneath.
 
@@ -10,12 +10,11 @@ A sleek, blazing-fast digital clock with a built-in stopwatch — simple on the 
   - [Quick Start](#quick-start)
     - [Prerequisites](#prerequisites)
     - [1. Clone and install](#1-clone-and-install)
-    - [2. Run in development mode](#2-run-in-development-mode)
-    - [3. Run in production mode](#3-run-in-production-mode)
-    - [4. Open in browser](#4-open-in-browser)
+    - [2. Create the runtime environment file](#2-create-the-runtime-environment-file)
+    - [3. Run in development mode](#3-run-in-development-mode)
+    - [4. Run in production mode](#4-run-in-production-mode)
+    - [5. Open in the browser](#5-open-in-the-browser)
   - [Runtime Configuration](#runtime-configuration)
-    - [PowerShell example](#powershell-example)
-    - [macOS/Linux example](#macoslinux-example)
   - [Routes](#routes)
   - [Architecture](#architecture)
     - [Server-side modules](#server-side-modules)
@@ -23,11 +22,11 @@ A sleek, blazing-fast digital clock with a built-in stopwatch — simple on the 
     - [Request flow (high level)](#request-flow-high-level)
   - [Repository Structure](#repository-structure)
   - [Docker](#docker)
+    - [Published images](#published-images)
     - [Pull and run from Docker Hub](#pull-and-run-from-docker-hub)
     - [Pull and run from GitHub Container Registry](#pull-and-run-from-github-container-registry)
-    - [Run with runtime env vars](#run-with-runtime-env-vars)
+    - [Run with runtime environment variables](#run-with-runtime-environment-variables)
     - [Build locally](#build-locally)
-    - [Access the Website](#access-the-website)
   - [Release Workflow](#release-workflow)
   - [Logging and Debugging](#logging-and-debugging)
   - [Security Notes](#security-notes)
@@ -36,30 +35,32 @@ A sleek, blazing-fast digital clock with a built-in stopwatch — simple on the 
 
 ## Overview
 
-Digital Clock is a minimalist web application with two core experiences:
+Digital Clock exposes two user-facing pages:
 
-- A live digital clock with a 12-hour/24-hour toggle.
-- A stopwatch with start, stop, and reset controls.
+- `/` serves the main clock page with a persistent 12-hour or 24-hour display toggle.
+- `/stopwatch/` serves the stopwatch page with Start, Stop, and Reset controls.
 
-The project uses a modular Node.js HTTP server (no framework) and modular browser-side JavaScript.
+The application is served by a modular Node.js HTTP server with no framework dependency. The current server code also handles common static file read failures more explicitly, returning safer and clearer `403`, `404`, and `500` responses depending on the underlying filesystem error.
 
 ## Features
 
-- Real-time digital clock display.
-- 12h/24h format switch with persistence through `localStorage` (`clockMode`).
-- Stopwatch powered by `performance.now()` + `requestAnimationFrame` for monotonic elapsed timing.
-- Responsive navigation for desktop and mobile.
-- Dynamic runtime config endpoint at `/config.js` for browser debug behavior.
-- Static file server with custom 404 handling.
-- Containerized runtime with a hardened multi-stage `Dockerfile`.
-- Automated multi-arch image publishing to Docker Hub and GHCR on version tags.
+- Live digital clock with seconds.
+- 12-hour or 24-hour mode toggle persisted in `localStorage` as `clockMode`.
+- Stopwatch built on `performance.now()` and `requestAnimationFrame` for monotonic elapsed timing.
+- Responsive navigation for desktop and mobile layouts.
+- Dynamic `/config.js` endpoint that exposes `window.APP_CONFIG.DEBUG` to the browser.
+- Custom `404.html` handling for missing files and directories.
+- Explicit static file read handling for `ENOENT`, `EISDIR`, `EACCES`, `EPERM`, `EMFILE`, and unexpected filesystem failures.
+- Multi-stage Docker build with non-root runtime execution.
+- Automated multi-architecture image publishing to Docker Hub and GHCR on release tags.
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 24.13.1 (LTS)
+- Node.js `24.14.1`
 - npm
+- Git
 
 ### 1. Clone and install
 
@@ -69,105 +70,103 @@ cd Digital-Clock
 npm ci
 ```
 
-### 2. Run in development mode
+### 2. Create the runtime environment file
+
+`npm run dev` loads values from `.env`, so create that file before starting the development server.
+
+`.env`
 
 ```env
 PORT=5500
 DEBUG=true
 ```
 
+### 3. Run in development mode
+
 ```bash
 npm run dev
 ```
 
-### 3. Run in production mode
+### 4. Run in production mode
 
 ```bash
 npm start
 ```
 
-### 4. Open in browser
+If no `PORT` environment variable is set, the production server listens on port `80`.
+
+### 5. Open in the browser
+
+If you are using the sample `.env` shown above:
+
+```text
+http://localhost:5500/
+http://localhost:5500/stopwatch/
+```
+
+If you are running with the default production port:
 
 ```text
 http://localhost:80/
 http://localhost:80/stopwatch/
 ```
 
-If you set a custom `PORT`, use that port instead.
-
 ## Runtime Configuration
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `PORT` | No | `80` | HTTP port for the Node server. |
-| `DEBUG` | No | `false` | Enables non-essential log levels (`debug`, `trace`, `log`). |
-
-### PowerShell example
-
-```env
-PORT=5500
-DEBUG=true
-```
-
-```powershell
-npm run dev
-```
-
-### macOS/Linux example
-
-```env
-PORT=5500
-DEBUG=true
-```
-
-```bash
-npm run dev
-```
+| `PORT` | No | `80` | HTTP port used by the Node.js server. |
+| `DEBUG` | No | `false` | Enables `log`, `debug`, and `trace` logging on both server and client. |
 
 ## Routes
 
 | Route | Method | Behavior |
 | --- | --- | --- |
-| `/` | GET | Serves `index.html` (clock page). |
-| `/stopwatch` | GET | 301 redirect to `/stopwatch/`. |
-| `/stopwatch/` | GET | Serves `stopwatch/index.html`. |
-| `/config.js` | GET | Serves dynamic config script with `window.APP_CONFIG.DEBUG`. |
-| `/*` | GET | Serves static assets; returns custom 404 page if missing. |
+| `/` | `GET` | Serves `index.html` for the digital clock page. |
+| `/stopwatch` | `GET` | Sends a `301` redirect to `/stopwatch/`. |
+| `/stopwatch/` | `GET` | Serves `stopwatch/index.html`. |
+| `/config.js` | `GET` | Returns a generated script that defines `window.APP_CONFIG.DEBUG` and sets `Cache-Control: no-store`. |
+| `/*` | `GET` | Serves static files, uses `404.html` for missing paths or directory reads, returns `403` for permission-denied file reads, and returns `500` for other read failures. |
 
 ## Architecture
 
 ### Server-side modules
 
+- `router.js`: Application entrypoint that initializes logging, creates the request handler, and starts the HTTP server.
 - `server-modules/server/`: HTTP server bootstrap and port binding.
-- `server-modules/router/`: request flow orchestration.
+- `server-modules/router/`: Request orchestration for config, redirect, and static file handling.
 - `server-modules/paths/`: URL parsing and project root resolution.
-- `server-modules/static/`: static path resolution, file serving, stopwatch redirect.
-- `server-modules/config/`: dynamic `/config.js` generation.
-- `server-modules/responses/`: shared response helpers (404/500/redirect).
-- `server-modules/mime/`: MIME type mapping.
-- `server-modules/logs/`: server logger with debug gating.
+- `server-modules/static/`: Static path resolution, stopwatch redirect, and file read response handling.
+- `server-modules/config/`: Dynamic `/config.js` generation.
+- `server-modules/responses/`: Shared helpers for redirects, `404`, and `500` responses.
+- `server-modules/mime/`: File extension to content-type mapping.
+- `server-modules/logs/`: Server logger with `DEBUG` gating.
 
 ### Client-side modules
 
-- `client-modules/clock/`: live clock updates and formatting.
-- `client-modules/preferences/`: load/save mode preferences and toggle listeners.
-- `client-modules/stopwatch/`: stopwatch state and control logic.
-- `client-modules/navigation/`: mobile menu behavior and ARIA state updates.
-- `client-modules/logs/`: browser logger with debug gating.
+- `client-modules/clock/`: Clock rendering and interval lifecycle.
+- `client-modules/preferences/`: Saved clock mode loading and toggle persistence.
+- `client-modules/stopwatch/`: Stopwatch timing state and button behavior.
+- `client-modules/navigation/`: Mobile menu interactions and `aria-expanded` updates.
+- `client-modules/logs/`: Browser logger with `DEBUG` gating.
 
 ### Request flow (high level)
 
-1. `router.js` initializes logger, creates a request handler, and starts the server.
-2. Router parses the request URL and checks special handlers (`/config.js`, `/stopwatch`).
-3. Static resolver maps path to file path and returns the content with security headers.
-4. Missing assets return `404.html`; unexpected failures return a 500 response.
+1. `router.js` initializes the logger, creates the request handler, and starts the server.
+2. The router parses the incoming request URL and checks for special handling for `/config.js` and `/stopwatch`.
+3. Static requests are resolved to files under the project root and served with the correct MIME type and security headers.
+4. Missing paths fall back to `404.html`, permission errors return `403`, and unexpected read failures return `500`.
 
 ## Repository Structure
 
 ```text
 Digital-Clock/
+├─ .github/
+│  └─ workflows/
+│     └─ docker-push.yml
 ├─ assets/
-│  ├─ Mobile/nav.svg
+│  ├─ Mobile/
+│  │  └─ nav.svg
 │  ├─ background.webp
 │  └─ favicon.svg
 ├─ client-modules/
@@ -193,65 +192,84 @@ Digital-Clock/
 │  ├─ body.css
 │  ├─ main.css
 │  └─ nav.css
-├─ .github/workflows/docker-push.yml
+├─ CONTRIBUTING.md
 ├─ Dockerfile
+├─ README.md
 ├─ index.html
 ├─ index.js
-├─ router.js
-└─ package.json
+├─ package-lock.json
+├─ package.json
+└─ router.js
 ```
 
 ## Docker
 
-Your images are published to:
+### Published images
+
+Images are published to both registries:
 
 - Docker Hub: [`amnoorbrar/digital-clock`](https://hub.docker.com/r/amnoorbrar/digital-clock)
-- GHCR: [`ghcr.io/amnoor/digital-clock`](https://github.com/Amnoor/Digital-Clock/pkgs/container/digital-clock)
+- GitHub Container Registry: [`ghcr.io/amnoor/digital-clock`](https://github.com/Amnoor/Digital-Clock/pkgs/container/digital-clock)
+
+Release tags such as `v1.0.4` and the rolling `latest` tag are published by the release workflow.
 
 ### Pull and run from Docker Hub
 
 ```bash
-docker pull amnoorbrar/digital-clock:latest
-docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --tmpfs /var/tmp:rw,noexec,nosuid,size=16m --name digital-clock-website amnoorbrar/digital-clock:latest
+docker pull amnoorbrar/digital-clock:v1.0.4
+docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website amnoorbrar/digital-clock:v1.0.4
 ```
 
 ### Pull and run from GitHub Container Registry
 
 ```bash
-docker pull ghcr.io/amnoor/digital-clock:latest
-docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --tmpfs /var/tmp:rw,noexec,nosuid,size=16m --name digital-clock-website ghcr.io/amnoorbrar/digital-clock:latest
+docker pull ghcr.io/amnoor/digital-clock:v1.0.4
+docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website ghcr.io/amnoor/digital-clock:v1.0.4
 ```
 
-### Run with runtime env vars
+### Run with runtime environment variables
 
 ```bash
-docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 -e PORT=80 -e DEBUG=true --tmpfs /tmp:rw,noexec,nosuid,size=16m --tmpfs /var/tmp:rw,noexec,nosuid,size=16m --name digital-clock-website amnoorbrar/digital-clock:latest
+docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 -e PORT=80 -e DEBUG=true --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website amnoorbrar/digital-clock:v1.0.4
+```
+
+Then open:
+
+```text
+http://localhost:8080/
+http://localhost:8080/stopwatch/
 ```
 
 ### Build locally
 
 ```bash
 docker build -t digital-clock:local .
-docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --tmpfs /var/tmp:rw,noexec,nosuid,size=16m --name digital-clock-website amnoorbrar/digital-clock:local
+docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website digital-clock:local
 ```
-
-### Access the Website
-
-Open the Website Home page at [`localhost:8080`](http://localhost:8080/) and the the Stopwatch Page at [`localhost:8080`](http://localhost:8080/stopwatch)
 
 ## Release Workflow
 
-The GitHub Actions workflow at `.github/workflows/docker-push.yml` runs on pushes to tags matching `v*`.
+The GitHub Actions workflow at `.github/workflows/docker-push.yml` runs when a tag matching `v*` is pushed.
 
-For example: `v1.0.0` or `v1.2.3`
+Copy-paste release example:
 
-On tag push, the workflow builds and publishes multi-architecture images (`linux/amd64`, `linux/arm64`) to Docker Hub and GHCR and generates provenance/SBOM metadata.
+```bash
+git tag v1.0.4
+git push origin v1.0.4
+```
+
+On tag push, the workflow:
+
+- Builds multi-architecture images for `linux/amd64` and `linux/arm64`.
+- Publishes the release tag and `latest` to Docker Hub and GHCR.
+- Generates provenance and SBOM metadata during the image build.
 
 ## Logging and Debugging
 
-- Production-friendly logs are always emitted for `error`, `warn`, and `info` levels.
-- Verbose logs (`debug`, `trace`, `log`) are emitted when `DEBUG=true`.
-- Browser runtime receives debug state through `/config.js`.
+- `error`, `warn`, and `info` logs are always emitted on both server and client.
+- `log`, `debug`, and `trace` logs are enabled when `DEBUG=true`.
+- The browser receives the debug flag through `/config.js`.
+- `/config.js` is served with `Cache-Control: no-store` so browser-side debug state is not cached across environment changes.
 
 ## Security Notes
 
@@ -261,9 +279,16 @@ Static file responses include:
 - `X-Frame-Options: DENY`
 - `Referrer-Policy: no-referrer`
 
+Other important runtime behavior:
+
+- Missing assets and directory reads fall back to `404.html`.
+- Permission-denied file reads return `403 Forbidden`.
+- Unexpected filesystem read failures return `500`.
+- Container run examples use a non-root user (`1000:1000`), `--read-only`, and `tmpfs` mounts for writable temporary paths.
+
 ## Contributing
 
-See [`CONTRIBUTING.md`](/CONTRIBUTING.md) for branch, commit, PR, and review requirements.
+See [`CONTRIBUTING.md`](/CONTRIBUTING.md) for development workflow, pull request structure, manual validation steps, and merge commit guidance.
 
 ## License
 

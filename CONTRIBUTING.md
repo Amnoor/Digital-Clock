@@ -1,4 +1,4 @@
-﻿# Contributing to Digital Clock
+# Contributing to Digital Clock
 
 A sleek, blazing-fast digital clock with a built-in stopwatch — simple on the surface, thoughtfully engineered underneath.
 
@@ -12,15 +12,15 @@ All examples below are copy-paste-ready.
   - [Development Setup](#development-setup)
     - [Prerequisites](#prerequisites)
     - [Clone and install](#clone-and-install)
-    - [Set runtime environment values](#set-runtime-environment-values)
+    - [Create the runtime environment file](#create-the-runtime-environment-file)
     - [Run locally](#run-locally)
-    - [Run production entrypoint locally](#run-production-entrypoint-locally)
+    - [Run the production entrypoint locally](#run-the-production-entrypoint-locally)
+  - [Project Conventions](#project-conventions)
+    - [Module boundaries](#module-boundaries)
+    - [Coding style](#coding-style)
+    - [Behavioral compatibility](#behavioral-compatibility)
   - [Branching Strategy](#branching-strategy)
   - [Commit Conventions](#commit-conventions)
-  - [Engineering Standards](#engineering-standards)
-    - [JavaScript and module boundaries](#javascript-and-module-boundaries)
-    - [Behavioral compatibility](#behavioral-compatibility)
-    - [Accessibility and UI behavior](#accessibility-and-ui-behavior)
   - [Pre-PR Validation Checklist](#pre-pr-validation-checklist)
   - [Pull Request Requirements](#pull-request-requirements)
     - [PR title](#pr-title)
@@ -28,16 +28,16 @@ All examples below are copy-paste-ready.
   - [Git Merge Commit](#git-merge-commit)
     - [Git Merge Commit Message Rule](#git-merge-commit-message-rule)
     - [Git Merge Commit Extended Description Rule](#git-merge-commit-extended-description-rule)
+  - [Release Tags](#release-tags)
   - [Issue and Change Quality Guidelines](#issue-and-change-quality-guidelines)
   - [Documentation Expectations](#documentation-expectations)
   - [License](#license)
-
 
 ## Development Setup
 
 ### Prerequisites
 
-- Node.js 24.13.1 (LTS)
+- Node.js `24.14.1`
 - npm
 - Git
 - Docker (optional, for container validation)
@@ -50,11 +50,12 @@ cd Digital-Clock
 npm ci
 ```
 
-### Set runtime environment values
+### Create the runtime environment file
 
-Set runtime environment values for `npm run dev` or else the command will throw a error message.
+`npm run dev` reads values from `.env`, so create that file first.
 
-`.env` file:
+`.env`
+
 ```env
 PORT=5500
 DEBUG=true
@@ -66,31 +67,60 @@ DEBUG=true
 npm run dev
 ```
 
-### Run production entrypoint locally
+### Run the production entrypoint locally
 
 ```bash
 npm start
 ```
 
+If `PORT` is not set, the production server listens on port `80`.
+
+## Project Conventions
+
+### Module boundaries
+
+- `router.js` is the Node.js entrypoint.
+- Server responsibilities stay inside `server-modules/`.
+- Browser behavior stays inside `client-modules/`.
+- Clock page entry files are `index.html` and `index.js`.
+- Stopwatch page entry files are `stopwatch/index.html` and `stopwatch/index.js`.
+- Shared styles live in `style/`, while stopwatch-specific styles live in `stopwatch/style/`.
+
+### Coding style
+
+- Use ES modules only (`import` and `export`).
+- Follow the existing `4`-space indentation style in JavaScript and CSS.
+- Keep paths lowercase and continue using `index.js` as the module entry filename pattern.
+- Reuse existing helpers instead of duplicating logic.
+- Keep comments short and meaningful.
+
+### Behavioral compatibility
+
+- Preserve the `/stopwatch` to `/stopwatch/` redirect behavior.
+- Preserve the `/config.js` contract that defines `window.APP_CONFIG.DEBUG`.
+- Preserve static file behavior for missing files, directory reads, permission-denied reads, and unexpected read failures.
+- Preserve the security headers applied to static file responses.
+- Preserve the 12-hour or 24-hour preference stored in `localStorage` as `clockMode`.
+
 ## Branching Strategy
 
-Create feature/fix branches from the default branch.
+Create branches from the default branch and use a clear prefix.
 
 ```bash
-git checkout -b feat/add-clock-improvement
+git checkout -b docs/update-release-v1-0-4-docs
 ```
 
 Recommended branch prefixes:
 
-- `feat/` for new functionality.
-- `fix/` for bug fixes.
-- `docs/` for documentation-only changes.
-- `refactor/` for internal restructuring without behavior changes.
-- `chore/` for maintenance tasks.
+- `feat/` for new functionality
+- `fix/` for bug fixes
+- `docs/` for documentation-only changes
+- `refactor/` for internal restructuring without behavior changes
+- `chore/` for maintenance tasks
 
 ## Commit Conventions
 
-Use Git/Conventional Commit style.
+Use Conventional Commit style for branch commits.
 
 Format:
 
@@ -101,50 +131,28 @@ type(scope): concise summary
 Examples:
 
 ```text
-feat(clock): add seconds transition smoothing
-fix(stopwatch): prevent double-start race in RAF loop
-docs(readme): clarify Docker Hub run instructions
-refactor(router): simplify static file resolution path
+fix(static): handle permission and file-read errors explicitly
+docs(readme): align Docker and runtime documentation with the v1.0.4 release line
+chore(package): sync package metadata for the next release
+refactor(router): simplify static request flow
 ```
 
-Use clear, intentional messages that describe the behavior change.
-
-## Engineering Standards
-
-### JavaScript and module boundaries
-
-- Keep ESM usage consistent (`import`/`export`).
-- Keep client concerns inside `client-modules/`.
-- Keep server concerns inside `server-modules/`.
-- Reuse existing helper modules instead of duplicating logic.
-
-### Behavioral compatibility
-
-- Preserve current route behavior unless the change explicitly intends to alter it.
-- Preserve `/stopwatch` -> `/stopwatch/` redirect behavior.
-- Preserve dynamic `/config.js` contract (`window.APP_CONFIG.DEBUG`).
-- Preserve static file handling and 404 fallback behavior.
-
-### Accessibility and UI behavior
-
-- Keep navigation controls keyboard-accessible.
-- Preserve ARIA behaviors currently used in navigation and page headings.
-- Avoid introducing disruptive visual regressions on mobile breakpoints.
+Use messages that describe the actual change, not generic activity.
 
 ## Pre-PR Validation Checklist
 
-Validate your changes before opening a pull request.
+No automated test framework is configured yet, so validate changes manually before opening a pull request.
 
 ```text
-[ ] Application starts with npm run dev.
-[ ] Home page loads and live clock updates every second.
-[ ] 12h/24h toggle works and preference persists in localStorage.
-[ ] Stopwatch Start/Stop/Reset behavior is correct.
+[ ] npm run dev starts successfully.
+[ ] The home page loads and the clock updates every second.
+[ ] The 12h/24h toggle works and persists through localStorage.
+[ ] The stopwatch Start, Stop, and Reset controls behave correctly.
 [ ] /stopwatch redirects to /stopwatch/.
-[ ] /config.js responds and reflects DEBUG state.
-[ ] Static assets and 404 behavior still work.
-[ ] Docker image builds and runs successfully (if changes impact runtime/container).
-[ ] Documentation updated when behavior/config/workflow changes.
+[ ] /config.js reflects the current DEBUG value.
+[ ] Missing paths still serve 404.html.
+[ ] Docker image builds and runs successfully when runtime or container behavior changed.
+[ ] README.md and CONTRIBUTING.md are updated when behavior, configuration, Docker usage, versioning, or workflow guidance changed.
 ```
 
 Optional Docker smoke test:
@@ -165,25 +173,25 @@ http://localhost:8080/stopwatch/
 
 ### PR title
 
-Use Git conventions.
+Use Git-style PR titles.
 
 Copy-paste title examples:
 
 ```text
-feat: add keyboard shortcuts for stopwatch controls
-fix: correct config endpoint cache-control behavior
-docs: add contribution workflow and release notes guidance
+fix: handle static file permission and read failures explicitly
+docs: update README and CONTRIBUTING for the v1.0.4 release line
+chore: align package metadata for the next release
 ```
 
 ### PR description format
 
-PR descriptions must contain only these 3 sections:
+PR descriptions must contain only these `3` sections:
 
 - `Summary`
 - `Files Changed`
 - `Key Changes`
 
-Copy-paste PR description template:
+Use this exact copy-paste template:
 
 ```markdown
 ## Summary
@@ -193,9 +201,7 @@ Describe the change at a high level and explain why it is needed.
 ## Files Changed
 
 Added:
-- `path/`
-  - `to/`
-    - `new-file`
+- None
 
 Modified:
 - `path/`
@@ -203,55 +209,72 @@ Modified:
     - `modified-file`
 
 Deleted:
-- `path/`
-  - `to/`
-    - `old-file`
+- None
 
 ## Key Changes
 
-- Describe each meaningful behavior, architecture, or workflow change.
-- Include important implementation details and edge-case handling.
-- Mention validation/testing performed.
+- Describe each meaningful behavior, architecture, release, or documentation change.
+- Include important implementation details and edge-case handling when relevant.
+- Include validation notes inside this section when the reviewer needs them, because the PR body should contain only these three sections.
 ```
 
-Keep this format exact.
+Keep the section order exact.
 
 ## Git Merge Commit
 
 ### Git Merge Commit Message Rule
 
-Use this Copy-paste merge commit message template:
+Use this exact copy-paste merge commit message template:
+
 ```text
-Merge the "<base branch>" branch to the "<target branch>" branch
+Merge the "<source branch>" branch to the "<target branch>" branch
 ```
 
 ### Git Merge Commit Extended Description Rule
 
-Do not use bulletins or numberings in merge commit extended descriptions.
+Do not use bullet points or numbering in merge commit extended descriptions.
 
 Use plain paragraph text only.
 
-Copy-paste merge commit extended description template:
+When a PR is created through an assisted workflow, always provide the PR link together with a copy-paste-ready merge commit extended description, even if it was not explicitly requested.
+
+Use this copy-paste template:
+
 ```text
-This merge introduces the finalized implementation for <feature/fix> across the Digital Clock application. The change updates <key files/modules> to deliver <primary outcome> while preserving existing behavior for <compatibility notes>. Validation was completed by running <commands/checks> and manually verifying <runtime behaviors>. This merge also updates documentation and workflow notes where relevant so contributors and reviewers can follow the new behavior consistently.
+This merge delivers <summary of the change> across the Digital Clock application and repository workflow. The update modifies <key files or modules> to achieve <primary outcome> while preserving the current behavior for <compatibility notes>. Validation was completed by running <commands> and manually verifying <runtime behavior>. Documentation and workflow guidance were updated where needed so future contributors and reviewers can follow the same release-ready process.
 ```
+
+## Release Tags
+
+Keep release version metadata aligned before tagging a release. If the release version changes, update both `package.json` and `package-lock.json` together.
+
+Release tags use the format `v<major>.<minor>.<patch>`.
+
+Copy-paste release example:
+
+```bash
+git tag v1.0.4
+git push origin v1.0.4
+```
+
+Pushing the tag triggers `.github/workflows/docker-push.yml`, which publishes `linux/amd64` and `linux/arm64` images to Docker Hub and GHCR and also updates the `latest` tag.
 
 ## Issue and Change Quality Guidelines
 
-When opening or updating issues and PRs, include:
+When opening or updating issues and pull requests, include:
 
-- Reproducible steps.
-- Expected behavior.
-- Actual behavior.
-- Relevant logs or screenshots when useful.
-- Environment details when behavior differs by setup.
+- Reproducible steps
+- Expected behavior
+- Actual behavior
+- Relevant logs or screenshots when useful
+- Environment details when setup affects the result
 
 ## Documentation Expectations
 
-If your change alters behavior, configuration, routes, release flow, or Docker usage, update affected docs in the same PR.
+If a change alters behavior, configuration, routes, Docker usage, release workflow, version references, or contributor workflow, update the affected documentation in the same PR.
 
-Documentation should remain precise, up-to-date, and copy-paste-ready.
+Documentation in this repository should stay precise, current, and copy-paste-ready.
 
 ## License
 
-By contributing, you agree that your contributions are provided under the repository MIT License found at [`LICENSE`](/LICENSE).
+By contributing, you agree that your contributions are provided under the MIT License in [`LICENSE`](/LICENSE).

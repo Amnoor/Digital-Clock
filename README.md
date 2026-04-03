@@ -7,6 +7,7 @@ A sleek, blazing-fast digital clock with a built-in stopwatch — simple on the 
 - [Digital Clock](#digital-clock)
   - [Overview](#overview)
   - [Features](#features)
+  - [Version Snapshot](#version-snapshot)
   - [Quick Start](#quick-start)
     - [Prerequisites](#prerequisites)
     - [1. Clone and install](#1-clone-and-install)
@@ -49,10 +50,19 @@ The application is served by a modular Node.js HTTP server with no framework dep
 - Stopwatch built on `performance.now()` and `requestAnimationFrame` for monotonic elapsed timing.
 - Responsive navigation for desktop and mobile layouts.
 - Dynamic `/config.js` endpoint that exposes `window.APP_CONFIG.DEBUG` to the browser.
-- Custom `404.html` handling for missing files and directories.
+- Custom `404.html` handling for missing files and directory reads.
 - Explicit static file read handling for `ENOENT`, `EISDIR`, `EACCES`, `EPERM`, `EMFILE`, and unexpected filesystem failures.
 - Multi-stage Docker build with non-root runtime execution.
 - Automated multi-architecture image publishing to Docker Hub and GHCR on release tags.
+
+## Version Snapshot
+
+| Item | Value |
+| --- | --- |
+| Application version | `1.0.5` |
+| Node.js version | `24.14.1` |
+| Dev runner | `nodemon 3.1.14` |
+| Runtime base image | `runtimenode/runtime-node:v1.2.5-node24.14.1` |
 
 ## Quick Start
 
@@ -211,26 +221,26 @@ Images are published to both registries:
 - Docker Hub: [`amnoorbrar/digital-clock`](https://hub.docker.com/r/amnoorbrar/digital-clock)
 - GitHub Container Registry: [`ghcr.io/amnoor/digital-clock`](https://github.com/Amnoor/Digital-Clock/pkgs/container/digital-clock)
 
-Release tags such as `v1.0.4` and the rolling `latest` tag are published by the release workflow.
+Release tags such as `v1.0.5` and the rolling `latest` tag are published by the release workflow.
 
 ### Pull and run from Docker Hub
 
 ```bash
-docker pull amnoorbrar/digital-clock:v1.0.4
-docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website amnoorbrar/digital-clock:v1.0.4
+docker pull amnoorbrar/digital-clock:v1.0.5
+docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website amnoorbrar/digital-clock:v1.0.5
 ```
 
 ### Pull and run from GitHub Container Registry
 
 ```bash
-docker pull ghcr.io/amnoor/digital-clock:v1.0.4
-docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website ghcr.io/amnoor/digital-clock:v1.0.4
+docker pull ghcr.io/amnoor/digital-clock:v1.0.5
+docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website ghcr.io/amnoor/digital-clock:v1.0.5
 ```
 
 ### Run with runtime environment variables
 
 ```bash
-docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 -e PORT=80 -e DEBUG=true --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website amnoorbrar/digital-clock:v1.0.4
+docker run --rm --user 1000:1000 --read-only --cap-drop ALL -p 8080:80 -e PORT=80 -e DEBUG=true --tmpfs /tmp:rw,noexec,nosuid,size=16m --name digital-clock-website amnoorbrar/digital-clock:v1.0.5
 ```
 
 Then open:
@@ -254,8 +264,8 @@ The GitHub Actions workflow at `.github/workflows/docker-push.yml` runs when a t
 Copy-paste release example:
 
 ```bash
-git tag v1.0.4
-git push origin v1.0.4
+git tag v1.0.5
+git push origin v1.0.5
 ```
 
 On tag push, the workflow:
@@ -284,7 +294,7 @@ Other important runtime behavior:
 - Missing assets and directory reads fall back to `404.html`.
 - Permission-denied file reads return `403 Forbidden`.
 - Unexpected filesystem read failures return `500`.
-- Container run examples use a non-root user (`1000:1000`), `--read-only`, and `tmpfs` mounts for writable temporary paths.
+- Container run examples use a non-root user (`1000:1000`), `--read-only`, and a `tmpfs` mount for `/tmp`.
 
 ## Contributing
 

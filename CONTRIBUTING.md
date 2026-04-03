@@ -107,7 +107,7 @@ If `PORT` is not set, the production server listens on port `80`.
 Create branches from the default branch and use a clear prefix.
 
 ```bash
-git checkout -b docs/update-release-v1-0-4-docs
+git checkout -b docs/update-release-v1-0-5-docs
 ```
 
 Recommended branch prefixes:
@@ -132,7 +132,7 @@ Examples:
 
 ```text
 fix(static): handle permission and file-read errors explicitly
-docs(readme): align Docker and runtime documentation with the v1.0.4 release line
+docs(readme): align Docker and runtime documentation with the v1.0.5 release line
 chore(package): sync package metadata for the next release
 refactor(router): simplify static request flow
 ```
@@ -179,7 +179,7 @@ Copy-paste title examples:
 
 ```text
 fix: handle static file permission and read failures explicitly
-docs: update README and CONTRIBUTING for the v1.0.4 release line
+docs: update README and CONTRIBUTING for the v1.0.5 release line
 chore: align package metadata for the next release
 ```
 
@@ -253,8 +253,8 @@ Release tags use the format `v<major>.<minor>.<patch>`.
 Copy-paste release example:
 
 ```bash
-git tag v1.0.4
-git push origin v1.0.4
+git tag v1.0.5
+git push origin v1.0.5
 ```
 
 Pushing the tag triggers `.github/workflows/docker-push.yml`, which publishes `linux/amd64` and `linux/arm64` images to Docker Hub and GHCR and also updates the `latest` tag.
